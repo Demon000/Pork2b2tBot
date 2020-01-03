@@ -22,6 +22,8 @@ import com.google.gson.JsonParser;
 import net.daporkchop.lib.logging.Logger;
 import net.daporkchop.lib.logging.Logging;
 import net.daporkchop.lib.logging.impl.DefaultLogger;
+import net.daporkchop.lib.logging.impl.SimpleLogger;
+import net.daporkchop.lib.minecraft.text.parser.MinecraftFormatParser;
 import net.daporkchop.toobeetooteebot.client.handler.incoming.AdvancementsHandler;
 import net.daporkchop.toobeetooteebot.client.handler.incoming.BlockChangeHandler;
 import net.daporkchop.toobeetooteebot.client.handler.incoming.BossBarHandler;
@@ -63,6 +65,10 @@ import net.daporkchop.toobeetooteebot.client.handler.incoming.spawn.SpawnObjectH
 import net.daporkchop.toobeetooteebot.client.handler.incoming.spawn.SpawnPaintingPacket;
 import net.daporkchop.toobeetooteebot.client.handler.incoming.spawn.SpawnPlayerHandler;
 import net.daporkchop.toobeetooteebot.client.PorkClientSession;
+import net.daporkchop.toobeetooteebot.discord.DiscordBot;
+import net.daporkchop.toobeetooteebot.discord.DiscordLogger;
+import net.daporkchop.toobeetooteebot.discord.DiscordMessageFormatter;
+import net.daporkchop.toobeetooteebot.discord.DiscordMessagePrinter;
 import net.daporkchop.toobeetooteebot.server.PorkServerConnection;
 import net.daporkchop.toobeetooteebot.server.handler.incoming.LoginStartHandler;
 import net.daporkchop.toobeetooteebot.server.handler.incoming.ServerChatHandler;
@@ -87,17 +93,27 @@ public interface Constants {
     JsonParser JSON_PARSER = new JsonParser();
     Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
+    // We cannot wrap DEFAULT_LOG without changing the whole program
     DefaultLogger DEFAULT_LOG = Logging.logger;
-    Logger AUTH_LOG = DEFAULT_LOG.channel("Auth");
-    Logger CACHE_LOG = DEFAULT_LOG.channel("Cache");
-    Logger CLIENT_LOG = DEFAULT_LOG.channel("Client");
-    Logger CHAT_LOG = DEFAULT_LOG.channel("Chat");
-    Logger GUI_LOG = DEFAULT_LOG.channel("GUI");
-    Logger MODULE_LOG = DEFAULT_LOG.channel("Module");
-    Logger SERVER_LOG = DEFAULT_LOG.channel("Server");
-    Logger WEBSOCKET_LOG = DEFAULT_LOG.channel("WebSocket");
+    // Keep Discord log out of the multi logger scheme
+    // because Discord bot initialization needs somewhere to print to
+    Logger DISCORD_LOG = DEFAULT_LOG.channel("Discord");
 
     Config CONFIG = new Config("config.json");
+
+    DiscordBot DISCORD_BOT = new DiscordBot();
+    DiscordLogger DISCORD_DEFAULT_LOG = new DiscordLogger();
+
+    Logger DEFAULT_MULTI_LOG = new MultiLogger(DEFAULT_LOG, DISCORD_DEFAULT_LOG);
+    Logger AUTH_LOG = DEFAULT_MULTI_LOG.channel("Auth");
+    Logger CACHE_LOG = DEFAULT_MULTI_LOG.channel("Cache");
+    Logger CLIENT_LOG = DEFAULT_MULTI_LOG.channel("Client");
+    Logger CHAT_LOG = DEFAULT_MULTI_LOG.channel("Chat");
+    Logger GUI_LOG = DEFAULT_MULTI_LOG.channel("GUI");
+    Logger MODULE_LOG = DEFAULT_MULTI_LOG.channel("Module");
+    Logger SERVER_LOG = DEFAULT_MULTI_LOG.channel("Server");
+    Logger WEBSOCKET_LOG = DEFAULT_MULTI_LOG.channel("WebSocket");
+
     DataCache CACHE = new DataCache();
     WebSocketServer WEBSOCKET_SERVER = new WebSocketServer();
 

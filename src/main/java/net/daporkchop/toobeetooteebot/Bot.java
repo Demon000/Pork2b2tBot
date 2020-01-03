@@ -108,6 +108,9 @@ public class Bot implements Constants {
                     .setFormatParser(new MinecraftFormatParser())
                     .setLogAmount(amount);
 
+            DISCORD_DEFAULT_LOG
+                    .setLogAmount(amount);
+
             if (CONFIG.getBoolean("log.ansi", true))    {
                 DEFAULT_LOG.enableANSI();
             }
