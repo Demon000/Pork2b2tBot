@@ -119,20 +119,75 @@ public class Bot implements Constants {
             }
         }
 
-        DEFAULT_LOG.info("Starting Pork2b2tBot v%s...", VERSION);
+        DEFAULT_MULTI_LOG.info("Starting Pork2b2tBot v%s...", VERSION);
+
+        do {
+            DEFAULT_MULTI_LOG.info("Waiting for connection trigger...");
+        } while (waitForConnectionTrigger());
+    }
+
+    public static boolean waitForConnectionTrigger() {
+        try {
+            synchronized (Bot.class) {
+                Bot.class.wait();
+                startBot();
+            }
+        } catch (InterruptedException e) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static void triggerConnection() {
+        synchronized (Bot.class) {
+            Bot.class.notify();
+        }
+    }
+
+    public static void interruptConnection() {
+        stopBot();
+    }
+
+    protected static void startBot() {
+        if (instance != null) {
+            return;
+        }
 
         if (WebSocketServer.ENABLED) {
             WEBSOCKET_LOG.info("Starting WebSocket server...");
             WEBSOCKET_SERVER.start();
         }
 
-        Bot bot = new Bot();
-        instance = bot;
-        bot.start();
+        instance = new Bot();
+        try {
+            SHOULD_RECONNECT.set(true);
+            instance.start();
+        } catch (Exception e) {
+            DEFAULT_LOG.alert(e);
+        } finally {
+            DEFAULT_LOG.info("Shutting down...");
+            if (instance.server != null) {
+                instance.server.close(true);
+            }
+            WEBSOCKET_SERVER.shutdown();
+            CONFIG.save();
+            instance = null;
+        }
+    }
+
+    protected static void stopBot() {
+        if (instance == null) {
+            return;
+        }
+
+        SHOULD_RECONNECT.set(false);
+        if (instance.isConnected()) {
+            instance.client.getSession().disconnect("user disconnect", true);
+        }
     }
 
     public void start() {
-        try {
             this.gui.start();
             {
                 Thread mainThread = Thread.currentThread();
@@ -150,11 +205,7 @@ public class Bot implements Constants {
                             }
                         }
                     }
-                    SHOULD_RECONNECT.set(false);
-                    if (this.isConnected()) {
-                        this.client.getSession().disconnect("user disconnect");
-                    }
-                    mainThread.interrupt();
+                    interruptConnection();
                 }, "Pork2b2tBot command processor thread");
                 commandReaderThread.setDaemon(true);
                 commandReaderThread.start();
@@ -238,16 +289,6 @@ public class Bot implements Constants {
                 //wait for client to disconnect before starting again
                 CLIENT_LOG.info("Disconnected. Reason: %s", ((PorkClientSession) this.client.getSession()).getDisconnectReason());
             } while (SHOULD_RECONNECT.get() && CACHE.reset(true) && this.delayBeforeReconnect());
-        } catch (Exception e) {
-            DEFAULT_LOG.alert(e);
-        } finally {
-            DEFAULT_LOG.info("Shutting down...");
-            if (this.server != null) {
-                this.server.close(true);
-            }
-            WEBSOCKET_SERVER.shutdown();
-            CONFIG.save();
-        }
     }
 
     protected void connect() {

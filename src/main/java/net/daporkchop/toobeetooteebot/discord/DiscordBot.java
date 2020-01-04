@@ -1,5 +1,6 @@
 package net.daporkchop.toobeetooteebot.discord;
 
+import net.daporkchop.toobeetooteebot.Bot;
 import net.daporkchop.toobeetooteebot.util.Constants;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
@@ -51,6 +52,13 @@ public class DiscordBot extends ListenerAdapter implements Constants {
 
         if (event.getAuthor().isBot()) {
             return;
+        }
+
+        String rawMessage = event.getMessage().getContentRaw();
+        if (rawMessage.equals("!connect")) {
+            Bot.triggerConnection();
+        } else if (rawMessage.equals("!disconnect")) {
+            Bot.interruptConnection();
         }
 
         String message = "[" +
