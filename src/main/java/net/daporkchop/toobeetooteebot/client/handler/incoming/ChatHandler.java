@@ -30,13 +30,20 @@ public class ChatHandler implements HandlerRegistry.IncomingHandler<ServerChatPa
 
     @Override
     public boolean apply(@NonNull ServerChatPacket packet, @NonNull PorkClientSession session) {
-        CHAT_LOG.info(packet.getMessage());
+        String message;
+        try {
+            message = packet.getMessage();
+        } catch (Error e) {
+            return true;
+        }
+
+        CHAT_LOG.info(message);
+        WEBSOCKET_SERVER.fireChat(message);
         if ("2b2t.org".equals(CONFIG.getString("client.server.address"))
                 && this.parser.parse(packet.getMessage()).toRawString().toLowerCase().startsWith("Exception Connecting:".toLowerCase()))    {
             CLIENT_LOG.error("2b2t's queue is broken as per usual, disconnecting to avoid being stuck forever");
             session.disconnect("heck");
         }
-        WEBSOCKET_SERVER.fireChat(packet.getMessage());
         return true;
     }
 
