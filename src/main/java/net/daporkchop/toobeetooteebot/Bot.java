@@ -149,6 +149,14 @@ public class Bot implements Constants {
         stopBot();
     }
 
+    public static void sendMessage(String message) {
+        if (instance == null) {
+            return;
+        }
+
+        instance.client.getSession().send(new ClientChatPacket(message));
+    }
+
     protected static void startBot() {
         if (instance != null) {
             return;

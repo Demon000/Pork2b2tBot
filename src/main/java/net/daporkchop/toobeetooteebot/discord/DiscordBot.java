@@ -59,6 +59,9 @@ public class DiscordBot extends ListenerAdapter implements Constants {
             Bot.triggerConnection();
         } else if (rawMessage.equals("!disconnect")) {
             Bot.interruptConnection();
+        } else if (rawMessage.startsWith("!chat ")) {
+            String message = rawMessage.substring(6);
+            Bot.sendMessage(message);
         }
 
         String message = "[" +
