@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -37,6 +38,14 @@ public class DiscordBot extends ListenerAdapter implements Constants {
     }
 
     public void sendMessage(String message) {
+        if (!ENABLED || !INITIALIZED) {
+            return;
+        }
+
+        CHANNEL.sendMessage(message).queue();
+    }
+
+    public void sendEmbed(MessageEmbed message) {
         if (!ENABLED || !INITIALIZED) {
             return;
         }
