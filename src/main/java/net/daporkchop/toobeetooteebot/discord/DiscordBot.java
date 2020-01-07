@@ -5,8 +5,8 @@ import net.daporkchop.toobeetooteebot.util.Constants;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -18,16 +18,14 @@ public class DiscordBot extends ListenerAdapter implements Constants {
     private static final String TOKEN = CONFIG.getString("discord.token");
     private static final String CHANNEL_ID = CONFIG.getString("discord.channelId");
 
-    private MessageChannel CHANNEL;
     private boolean INITIALIZED;
+    private JDA jda;
 
     public DiscordBot() {
         try {
-            JDA jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).build();
+            jda = new JDABuilder(AccountType.BOT).setToken(TOKEN).build();
             jda.addEventListener(this);
             jda.awaitReady();
-
-            CHANNEL = jda.getTextChannelById(CHANNEL_ID);
 
             DISCORD_LOG.success("Discord bot connected!");
             INITIALIZED = true;
@@ -42,7 +40,12 @@ public class DiscordBot extends ListenerAdapter implements Constants {
             return;
         }
 
-        CHANNEL.sendMessage(message).queue();
+        TextChannel channel = jda.getTextChannelById(CHANNEL_ID);
+        if (channel == null) {
+            return;
+        }
+
+        channel.sendMessage(message).queue();
     }
 
     public void sendEmbed(MessageEmbed message) {
@@ -50,7 +53,12 @@ public class DiscordBot extends ListenerAdapter implements Constants {
             return;
         }
 
-        CHANNEL.sendMessage(message).queue();
+        TextChannel channel = jda.getTextChannelById(CHANNEL_ID);
+        if (channel == null) {
+            return;
+        }
+
+        channel.sendMessage(message).queue();
     }
 
     @Override
