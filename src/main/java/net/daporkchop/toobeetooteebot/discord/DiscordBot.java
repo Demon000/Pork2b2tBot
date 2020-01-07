@@ -63,10 +63,14 @@ public class DiscordBot extends ListenerAdapter implements Constants {
             return;
         }
 
+        if (!event.getTextChannel().getId().equals(CHANNEL_ID)) {
+            return;
+        }
+
         String rawMessage = event.getMessage().getContentRaw();
-        if (rawMessage.equals("!connect")) {
+        if (rawMessage.equals("!connect ")) {
             Bot.triggerConnection();
-        } else if (rawMessage.equals("!disconnect")) {
+        } else if (rawMessage.equals("!disconnect ")) {
             Bot.interruptConnection();
         } else if (rawMessage.startsWith("!chat ")) {
             String message = rawMessage.substring(6);
