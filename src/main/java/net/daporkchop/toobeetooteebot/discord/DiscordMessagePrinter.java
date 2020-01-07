@@ -15,6 +15,10 @@ public class DiscordMessagePrinter implements MessagePrinter, Constants {
 
         this.doBuild(builder, component);
 
+        if (builder.isEmpty()) {
+            return;
+        }
+
         DISCORD_BOT.sendEmbed(builder.build());
     }
 
